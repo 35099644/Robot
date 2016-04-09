@@ -79,7 +79,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * @param name
      * @return
      */
-    public boolean containEventHandler(String name){
+    public static boolean containEventHandler(String name){
         return EVENT_HANDLERS.containsKey(name);
     }
 
@@ -88,7 +88,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * @param name
      * @return
      */
-    public boolean containHookHandler(String name){
+    public static boolean containHookHandler(String name){
         return HOOK_HANDLERS.containsKey(name);
     }
 }
