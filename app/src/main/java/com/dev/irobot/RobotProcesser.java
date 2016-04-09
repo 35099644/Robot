@@ -73,4 +73,22 @@ public final class RobotProcesser implements EventHandler, HookHandler {
     public static void removeHookHandler(String name){
         HOOK_HANDLERS.remove(name);
     }
+
+    /**
+     * 判断EventHandler是否已经添加
+     * @param name
+     * @return
+     */
+    public boolean containEventHandler(String name){
+        return EVENT_HANDLERS.containsKey(name);
+    }
+
+    /**
+     * 判断HookHandler是否已经添加
+     * @param name
+     * @return
+     */
+    public boolean containHookHandler(String name){
+        return HOOK_HANDLERS.containsKey(name);
+    }
 }
