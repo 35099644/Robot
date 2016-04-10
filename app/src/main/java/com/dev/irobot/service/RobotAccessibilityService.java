@@ -2,10 +2,10 @@ package com.dev.irobot.service;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 import com.dev.irobot.subscribe.PackageSubscribe;
 import com.dev.irobot.tool.HandlerManager;
-import com.dev.irobot.tool.Log;
 
 /**
  * xml/accessibility_service_config.xml
@@ -26,17 +26,19 @@ public class RobotAccessibilityService extends AccessibilityService {
             accessibilityServiceInfo.packageNames = PackageSubscribe.getInstance().getSubscribePackage().toArray(packageNames);
             setServiceInfo(accessibilityServiceInfo);
         }
-        Log.v(TAG,"onServiceConnected");
     }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        Log.v(TAG,"onAccessibilityEvent event:"+event);
         HandlerManager.getEventProcesser().handleAccessibilityEvent(this, event);
     }
 
     @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        return super.onKeyEvent(event);
+    }
+
+    @Override
     public void onInterrupt() {
-        Log.v(TAG,"onInterrupt");
     }
 }
