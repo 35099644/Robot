@@ -6,8 +6,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
+import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
-import com.dev.irobot.interceptor.HookMethodInterceptor;
 import de.robv.android.xposed.XposedHelpers;
 
 /**
@@ -20,7 +20,7 @@ import de.robv.android.xposed.XposedHelpers;
  * @see LocationListener#onLocationChanged(Location)
  *
  */
-public class WechatInterceptor implements HookMethodInterceptor{
+public class SimpleHookMethodHandler implements HookMethodHandler {
     @Override
     public void findAndHookMethod() {
         XposedHelpers.findAndHookMethod(TelephonyManager.class, "getDeviceId", new MethodHook() {
