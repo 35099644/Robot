@@ -32,7 +32,7 @@ public class RobotAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         Log.v(TAG,"onAccessibilityEvent event:"+event);
-        HandlerManager.getProcesser().handleAccessibilityEvent(event);
+        HandlerManager.getProcesser().handleAccessibilityEvent(this, event);
     }
 
     @Override

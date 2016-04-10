@@ -1,5 +1,6 @@
 package com.dev.irobot.handler;
 
+import android.accessibilityservice.AccessibilityService;
 import android.view.accessibility.AccessibilityEvent;
 import com.dev.irobot.filter.Filter;
 import com.dev.irobot.filter.PackageFilter;
@@ -24,10 +25,10 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * @param event
      */
     @Override
-    public void handleAccessibilityEvent(AccessibilityEvent event) {
+    public void handleAccessibilityEvent(AccessibilityService accessibilityService, AccessibilityEvent event) {
         if(filter.accept(event.getPackageName().toString())){
             for(EventHandler handler : EVENT_HANDLERS.values()){
-                handler.handleAccessibilityEvent(event);
+                handler.handleAccessibilityEvent(accessibilityService,event);
             }
         }
     }
