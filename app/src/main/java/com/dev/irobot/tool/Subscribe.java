@@ -1,13 +1,13 @@
 package com.dev.irobot.tool;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Jacky on 2016/4/10.
  */
 public class Subscribe {
-    private static final List<String> subscribePackage = new ArrayList<String>();
+    private static final Set<String> subscribePackage = new HashSet<String>();
 
     public static final Subscribe SUBSCRIBE = new Subscribe();
 
@@ -15,7 +15,7 @@ public class Subscribe {
         return SUBSCRIBE;
     }
 
-    public List<String> getSubscribePackage() {
+    public Set<String> getSubscribePackage() {
         return subscribePackage;
     }
 }
