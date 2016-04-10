@@ -2,7 +2,7 @@ package com.dev.irobot.service;
 
 import android.accessibilityservice.AccessibilityService;
 import android.view.accessibility.AccessibilityEvent;
-import com.dev.irobot.handler.HandlerManager;
+import com.dev.irobot.tool.HandlerManager;
 import com.dev.irobot.tool.Log;
 
 /**

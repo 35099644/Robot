@@ -1,8 +1,8 @@
-package com.dev.irobot;
+package com.dev.irobot.handler;
 
 import android.view.accessibility.AccessibilityEvent;
-import com.dev.irobot.handler.EventHandler;
-import com.dev.irobot.handler.HookHandler;
+import com.dev.irobot.filter.Filter;
+import com.dev.irobot.filter.PackageFilter;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 import java.util.HashMap;
@@ -15,16 +15,20 @@ import java.util.Map;
  */
 public final class RobotProcesser implements EventHandler, HookHandler {
 
-    private static final Map<String, EventHandler> EVENT_HANDLERS = new HashMap<String, EventHandler>();
-    private static final Map<String, HookHandler>  HOOK_HANDLERS  = new HashMap<String, HookHandler>();
+    private final Map<String, EventHandler> EVENT_HANDLERS = new HashMap<String, EventHandler>();
+    private final Map<String, HookHandler>  HOOK_HANDLERS  = new HashMap<String, HookHandler>();
+
+    private final Filter filter = new PackageFilter();
     /**
      * 处理AccessibilityService中的AccessibilityEvent事件
      * @param event
      */
     @Override
     public void handleAccessibilityEvent(AccessibilityEvent event) {
-        for(EventHandler handler : EVENT_HANDLERS.values()){
-            handler.handleAccessibilityEvent(event);
+        if(filter.accept(event.getPackageName().toString())){
+            for(EventHandler handler : EVENT_HANDLERS.values()){
+                handler.handleAccessibilityEvent(event);
+            }
         }
     }
 
@@ -35,8 +39,10 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      */
     @Override
     public void handleLoadPackage(LoadPackageParam loadPackageParam) throws Throwable {
-        for(HookHandler handler : HOOK_HANDLERS.values()){
-            handler.handleLoadPackage(loadPackageParam);
+        if(filter.accept(loadPackageParam.packageName)){
+            for(HookHandler handler : HOOK_HANDLERS.values()){
+                handler.handleLoadPackage(loadPackageParam);
+            }
         }
     }
 
@@ -45,7 +51,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * @param name
      * @param eventHandler
      */
-    public static void addEventHandler(String name, EventHandler eventHandler){
+    public void addEventHandler(String name, EventHandler eventHandler){
         EVENT_HANDLERS.put(name, eventHandler);
     }
 
@@ -54,7 +60,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * @param name
      * @param hookHandler
      */
-    public static void addHookHandler(String name, HookHandler hookHandler){
+    public void addHookHandler(String name, HookHandler hookHandler){
         HOOK_HANDLERS.put(name, hookHandler);
     }
 
@@ -62,7 +68,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * 删除EventHandler
      * @param name
      */
-    public static void removeEventHandler(String name){
+    public void removeEventHandler(String name){
         EVENT_HANDLERS.remove(name);
     }
 
@@ -70,7 +76,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * 删除HookHandler
      * @param name
      */
-    public static void removeHookHandler(String name){
+    public void removeHookHandler(String name){
         HOOK_HANDLERS.remove(name);
     }
 
@@ -79,7 +85,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * @param name
      * @return
      */
-    public static boolean containEventHandler(String name){
+    public boolean containEventHandler(String name){
         return EVENT_HANDLERS.containsKey(name);
     }
 
@@ -88,7 +94,7 @@ public final class RobotProcesser implements EventHandler, HookHandler {
      * @param name
      * @return
      */
-    public static boolean containHookHandler(String name){
+    public boolean containHookHandler(String name){
         return HOOK_HANDLERS.containsKey(name);
     }
 }
