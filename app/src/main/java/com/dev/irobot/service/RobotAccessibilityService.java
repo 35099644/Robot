@@ -1,9 +1,11 @@
 package com.dev.irobot.service;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.view.accessibility.AccessibilityEvent;
 import com.dev.irobot.tool.HandlerManager;
 import com.dev.irobot.tool.Log;
+import com.dev.irobot.tool.Subscribe;
 
 /**
  * xml/accessibility_service_config.xml
@@ -17,6 +19,13 @@ public class RobotAccessibilityService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        String[] packageNames = new String[Subscribe.getInstance().getSubscribePackage().size()];
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            AccessibilityServiceInfo accessibilityServiceInfo = getServiceInfo();
+            accessibilityServiceInfo.packageNames = Subscribe.getInstance().getSubscribePackage().toArray(packageNames);
+            setServiceInfo(accessibilityServiceInfo);
+        }
         Log.v(TAG,"onServiceConnected");
     }
 
