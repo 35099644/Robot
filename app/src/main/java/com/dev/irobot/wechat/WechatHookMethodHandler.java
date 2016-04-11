@@ -1,11 +1,11 @@
 package com.dev.irobot.wechat;
 
 import android.location.GpsStatus;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
+import android.view.View;
+import android.widget.TextView;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
 import com.dev.irobot.tool.Log;
@@ -14,13 +14,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Created by Jacky on 2016/4/10.
- * @see TelephonyManager#getDeviceId()
- * @see TelephonyManager#getCellLocation()
- * @see TelephonyManager#getNeighboringCellInfo()
- * @see WifiManager#getScanResults()
- * @see LocationManager#getGpsStatus(GpsStatus)
- * @see LocationListener#onLocationChanged(Location)
- *
+ * 如果有公共父类只hook 公共父类就可以，不用每个类都hook, method只hook公共方法即可，
  */
 public class WechatHookMethodHandler implements HookMethodHandler {
     private static final String TAG = WechatHookMethodHandler.class.getSimpleName();
@@ -46,6 +40,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
 
         /**hook lbs begin*/
+
         XposedHelpers.findAndHookMethod(TelephonyManager.class, "getCellLocation", new MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -59,6 +54,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 Log.v(TAG,"afterHookerMethod:"+param.method);
             }
         });
+
 
         XposedHelpers.findAndHookMethod(TelephonyManager.class, "getNeighboringCellInfo", new MethodHook() {
             @Override
@@ -102,7 +98,58 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             }
         });
 
-
         /**hook lbs ended*/
+
+
+        /**
+         * view event hook begin
+         */
+
+        XposedHelpers.findAndHookMethod(View.class, "etOnClickListener", View.OnClickListener.class, new MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
+            }
+        });
+
+
+        XposedHelpers.findAndHookMethod(TextView.class, "setHint", CharSequence.class, new MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
+            }
+        });
+
+        XposedHelpers.findAndHookMethod(TextView.class, "setText", CharSequence.class, TextView.BufferType.class, new MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
+            }
+        });
+
+        /**
+         * view event hook begin
+         */
     }
 }
