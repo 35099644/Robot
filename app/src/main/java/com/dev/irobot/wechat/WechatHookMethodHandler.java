@@ -28,7 +28,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
     @Override
     public void findAndHookMethod() {
-        XposedHelpers.findAndHookMethod(MainActivity.class, "getDeviceId", new MethodHook() {
+        XposedHelpers.findAndHookMethod(MainActivity.class, "showToast", new MethodHook() {
 
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
