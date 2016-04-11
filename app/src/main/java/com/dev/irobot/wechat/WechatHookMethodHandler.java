@@ -6,7 +6,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
-import com.dev.irobot.activity.MainActivity;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
 import com.dev.irobot.tool.Log;
@@ -28,32 +27,19 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
     @Override
     public void findAndHookMethod() {
-        XposedHelpers.findAndHookMethod(MainActivity.class, "showToast", new MethodHook() {
-
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod");
-            }
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod");
-            }
-
-        });
-
+        Log.v(TAG,"findAndHookMethod.");
 
         XposedHelpers.findAndHookMethod(TelephonyManager.class, "getDeviceId", new MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
             }
         });
 
@@ -63,11 +49,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
             }
         });
 
@@ -75,11 +63,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
             }
         });
 
@@ -87,11 +77,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
             }
         });
 
@@ -99,11 +91,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method);
             }
         });
 
