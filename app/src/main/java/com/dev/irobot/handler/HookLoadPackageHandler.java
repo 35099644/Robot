@@ -11,7 +11,7 @@ public final class HookLoadPackageHandler {
         HookMethodHandlerSubscriber subscriber = HookMethodHandlerSubscriber.getInstance();
         HookMethodHandler hookMethodHandler = subscriber.getHookMethodHandlers().get(loadPackageParam.packageName);
         if(hookMethodHandler !=null ){
-            hookMethodHandler.findAndHookMethod();
+            hookMethodHandler.findAndHookMethod(loadPackageParam);
         }
     }
 }

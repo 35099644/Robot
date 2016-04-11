@@ -10,6 +10,7 @@ import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
 import com.dev.irobot.tool.Log;
 import de.robv.android.xposed.XposedHelpers;
+import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Created by Jacky on 2016/4/10.
@@ -26,8 +27,8 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
 
     @Override
-    public void findAndHookMethod() {
-        Log.v(TAG,"findAndHookMethod.");
+    public void findAndHookMethod(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        Log.v(TAG,"load package:"+loadPackageParam.packageName);
 
         XposedHelpers.findAndHookMethod(TelephonyManager.class, "getDeviceId", new MethodHook() {
             @Override
