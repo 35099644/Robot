@@ -9,8 +9,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
  * 已经在assets/xposed_init中配置
  */
 public final class HookLoadPackage implements IXposedHookLoadPackage {
-
-    private final HookLoadPackageHandler hookLoadPackageHandler = new HookLoadPackageHandler();
+    private static final String TAG = HookLoadPackage.class.getSimpleName();
     /**
      * hook并拦截方法
      * @param loadPackageParam
@@ -18,6 +17,7 @@ public final class HookLoadPackage implements IXposedHookLoadPackage {
      */
     @Override
     public void handleLoadPackage(LoadPackageParam loadPackageParam) throws Throwable {
+        HookLoadPackageHandler hookLoadPackageHandler = new HookLoadPackageHandler();
         hookLoadPackageHandler.handleLoadPackage(loadPackageParam);
     }
 }

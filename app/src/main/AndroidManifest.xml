@@ -19,12 +19,13 @@
                 android:name="xposedmodule"
                 android:value="true" />
 
-
+        <meta-data
+                android:name="xposedminversion"
+                android:value="54" />
         <meta-data
                 android:name="xposeddescription"
                 android:value="@string/app_desc" />
     </application>
-
-    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
 
 </manifest>
