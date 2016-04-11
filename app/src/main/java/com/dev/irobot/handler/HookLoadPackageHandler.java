@@ -13,8 +13,8 @@ public final class HookLoadPackageHandler {
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         if(filter.accept(loadPackageParam.packageName)){
             HookMethodHandlerSubscriber subscriber = HookMethodHandlerSubscriber.getInstance();
-            for(HookMethodHandler interceptor : subscriber.getSubscriHookMethodHandler()){
-                interceptor.findAndHookMethod();
+            for(HookMethodHandler handler : subscriber.getHookMethodHandlers()){
+                handler.findAndHookMethod();
             }
         }
     }

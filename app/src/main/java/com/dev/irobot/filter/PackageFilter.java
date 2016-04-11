@@ -1,10 +1,10 @@
 package com.dev.irobot.filter;
 
-import com.dev.irobot.subscribe.PackageSubscriber;
+import com.dev.irobot.subscribe.HookMethodHandlerSubscriber;
 
 public final class PackageFilter implements Filter {
     @Override
     public boolean accept(String name) {
-        return PackageSubscriber.getInstance().getSubscribePackage().contains(name);
+        return HookMethodHandlerSubscriber.getInstance().getHookMethodHandlers().keySet().contains(name);
     }
 }
