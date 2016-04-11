@@ -11,7 +11,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 public final class HookLoadPackage implements IXposedHookLoadPackage {
     private static final String TAG = HookLoadPackage.class.getSimpleName();
     /**
-     * hook并拦截方法
+     * hook并拦截方法, 如果hook了新方法必须重启一次才会生效.
      * @param loadPackageParam
      * @throws Throwable
      */
