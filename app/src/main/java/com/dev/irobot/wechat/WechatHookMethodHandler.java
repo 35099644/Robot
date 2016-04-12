@@ -1,11 +1,14 @@
 package com.dev.irobot.wechat;
 
+import android.content.Context;
+import android.content.Intent;
 import android.location.GpsStatus;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.TextView;
+import com.dev.irobot.ContextHolder;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
 import com.dev.irobot.tool.Log;
@@ -149,7 +152,20 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         });
 
         /**
-         * view event hook begin
+         * view event hook ended
          */
     }
+
+
+    public void launchWeichat(){
+        Intent intent = launchIntentForPackage("com.tencent.mm");
+        ContextHolder.getInstance().getContext().startActivity(intent);
+    }
+
+    public Intent launchIntentForPackage(String packageName){
+        Context context = ContextHolder.getInstance().getContext();
+        return context.getPackageManager().getLaunchIntentForPackage(packageName);
+    }
+
+
 }

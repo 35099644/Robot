@@ -18,6 +18,8 @@ public final class HookMethodHandlerSubscriber {
         subscribeHookMethodHandlers.put("com.tencent.mm", new WechatHookMethodHandler());
     }
 
+    private HookMethodHandlerSubscriber(){}
+
     public static HookMethodHandlerSubscriber getInstance(){
         return SUBSCRIBER;
     }
