@@ -1,20 +1,25 @@
 package com.dev.irobot.activity;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import com.dev.irobot.R;
+import com.dev.irobot.fragment.HomeFragment;
+import com.dev.irobot.support.SupportActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends SupportActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        showToast();
-    }
+        setContentView(R.layout.view_main);
 
-    public void showToast(){
-        Toast.makeText(this,"hook test!", Toast.LENGTH_SHORT).show();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment homeFragment = fragmentManager.findFragmentByTag(HomeFragment.class.getName());
+        if(homeFragment == null){
+            fragmentManager.beginTransaction().add(R.id.content, new HomeFragment(), HomeFragment.class.getName()).commitAllowingStateLoss();
+        }else {
+            fragmentManager.beginTransaction().show(homeFragment).commit();
+        }
     }
 }

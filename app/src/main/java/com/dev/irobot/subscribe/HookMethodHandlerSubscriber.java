@@ -16,9 +16,6 @@ public final class HookMethodHandlerSubscriber {
 
     static {
         subscribeHookMethodHandlers.put("com.tencent.mm", new WechatHookMethodHandler());
-
-        //测试
-        subscribeHookMethodHandlers.put("com.dev.irobot", new WechatHookMethodHandler());
     }
 
     public static HookMethodHandlerSubscriber getInstance(){
