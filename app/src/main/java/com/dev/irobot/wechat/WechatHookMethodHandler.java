@@ -105,7 +105,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
          * view event hook begin
          */
 
-        XposedHelpers.findAndHookMethod(View.class, "etOnClickListener", View.OnClickListener.class, new MethodHook() {
+        XposedHelpers.findAndHookMethod(View.class, "setOnClickListener", View.OnClickListener.class, new MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
