@@ -1,5 +1,7 @@
 package com.dev.irobot.handler;
 
+import android.util.Log;
+import com.dev.irobot.subscribe.HookMethodHandlerSubscriber;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
@@ -17,7 +19,11 @@ public final class HookLoadPackage implements IXposedHookLoadPackage {
      */
     @Override
     public void handleLoadPackage(LoadPackageParam loadPackageParam) throws Throwable {
-        HookLoadPackageHandler hookLoadPackageHandler = new HookLoadPackageHandler();
-        hookLoadPackageHandler.handleLoadPackage(loadPackageParam);
+        Log.v(TAG,"load package:"+loadPackageParam.packageName);
+        HookMethodHandlerSubscriber subscriber = HookMethodHandlerSubscriber.getInstance();
+        HookMethodHandler hookMethodHandler = subscriber.getHookMethodHandlers().get(loadPackageParam.packageName);
+        if(hookMethodHandler !=null ){
+            hookMethodHandler.findAndHookMethod(loadPackageParam);
+        }
     }
 }
