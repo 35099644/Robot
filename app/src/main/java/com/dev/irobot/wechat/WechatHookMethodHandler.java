@@ -1,10 +1,13 @@
 package com.dev.irobot.wechat;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.GpsStatus;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.TextView;
@@ -15,9 +18,12 @@ import com.dev.irobot.tool.Log;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
+import java.util.Arrays;
+
 /**
  * Created by Jacky on 2016/4/10.
- * 如果有公共父类只hook 公共父类就可以，不用每个类都hook, method只hook公共方法即可，
+ * 如果有公共父类只hook 公共父类就可以,不用每个类都hook, method只hook公共方法即可.
+ * 打印的log信息要到被hook的应用下去查看,比如com.tencent.mm,
  */
 public class WechatHookMethodHandler implements HookMethodHandler {
     private static final String TAG = WechatHookMethodHandler.class.getSimpleName();
@@ -31,13 +37,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
@@ -48,13 +54,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
@@ -63,13 +69,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
@@ -77,13 +83,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
@@ -91,13 +97,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
@@ -112,13 +118,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
@@ -127,13 +133,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
@@ -141,19 +147,48 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.v(TAG,"beforeHookerMethod:"+param.method);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.v(TAG,"afterHookerMethod:"+param.method);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
         });
 
         /**
          * view event hook ended
          */
+
+        XposedHelpers.findAndHookMethod(Activity.class, "onResume", Bundle.class, new MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
+            }
+        });
+
+
+        XposedHelpers.findAndHookMethod(Fragment.class, "onResume", Bundle.class, new MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
+            }
+        });
     }
 
 
