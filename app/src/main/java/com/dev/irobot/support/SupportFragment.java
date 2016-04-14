@@ -106,7 +106,13 @@ public class SupportFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        Log.d(this.getClass().getSimpleName(), "onHiddenChanged");
+        Log.d(this.getClass().getSimpleName(), "onHiddenChanged:"+hidden);
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        Log.d(this.getClass().getSimpleName(), "setUserVisibleHint:"+isVisibleToUser);
     }
 
     @Override

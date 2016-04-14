@@ -161,7 +161,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
          * view event hook ended
          */
 
-        XposedHelpers.findAndHookMethod(Activity.class, "onResume", Bundle.class, new MethodHook() {
+        XposedHelpers.findAndHookMethod(Activity.class, "onCreate", Bundle.class, new MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
@@ -176,7 +176,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         });
 
 
-        XposedHelpers.findAndHookMethod(Fragment.class, "onResume", Bundle.class, new MethodHook() {
+        XposedHelpers.findAndHookMethod(Fragment.class, "onResume", new MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
