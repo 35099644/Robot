@@ -9,6 +9,7 @@ import com.dev.irobot.support.SupportFragment;
 
 public class HomeFragment extends SupportFragment {
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.view_home, container, false);
