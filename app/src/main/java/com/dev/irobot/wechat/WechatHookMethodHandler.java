@@ -37,6 +37,15 @@ import static android.R.attr.id;
 public class WechatHookMethodHandler implements HookMethodHandler {
     private static final String TAG = WechatHookMethodHandler.class.getSimpleName();
 
+    /**微信activity列表 begin*/
+    //安装程序后,分别进入微信的各个界面,如果当前界面是activity 则会有类似日志android.app.Activity.onResume(), param:[], object:com.tencent.mm.ui.LauncherUI@4ae6f760,从中可以获取到Activity名字，如果有用到就在代码中写入
+    //微信界面中采用了大量Fragment,如果界面切换的时候看不到Activity的相关日志说明是Fragment之间在切换
+    //微信主界面
+    private static final String WECHAT_ACTIVITY = "com.tencent.mm.ui.LauncherUI";
+
+    /**微信activity列表 ended*/
+
+
     @Override
     public void findAndHookMethod(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         Log.v(TAG,"load package:"+loadPackageParam.packageName);
@@ -209,6 +218,16 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                if(param.thisObject instanceof View){
+                    //修改setOnClickListener参数
+                    if(param.args[0] instanceof OnClickListenerWrapper){
+                    }else{
+                        if(param.args[0] instanceof View.OnClickListener){
+                            param.args[0] = new OnClickListenerWrapper((View.OnClickListener) param.args[0]);
+                        }
+                    }
+                }
+
             }
 
             @Override
@@ -247,13 +266,27 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             if(rootView instanceof TextView){
                 String text = ((TextView) rootView).getText().toString();
                 if(!text.isEmpty()){
-                    Log.v(TAG,"View:"+rootView.getClass()+",text:"+((TextView) rootView).getText().toString()+", id:"+id+", view:"+rootView);
+                    Log.d(TAG,"View:"+rootView.getClass()+",text:"+((TextView) rootView).getText().toString()+", id:"+id+", view:"+rootView);
                 }
             }
 
         }
     }
 
+
+    /**
+     *
+     * a wrapper method of onClick(View)
+     * @param v
+     */
+    private void onViewClick(View v) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("onViewClick view:"+v+", hash:"+v.hashCode()+", id:"+id);
+        if(v instanceof ViewGroup){
+            builder.append(",child:"+((ViewGroup) v).getChildCount());
+        }
+        Log.i(TAG,builder.toString());
+    }
 
     /**
      * 当通知栏收到新朋友添加请求的时候调用
@@ -350,6 +383,22 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         Context context = ContextHolder.getInstance().getContext();
         return context.getPackageManager().getLaunchIntentForPackage(packageName);
     }
+
+
+    class OnClickListenerWrapper implements View.OnClickListener{
+
+        private final View.OnClickListener onClickListener;
+        public OnClickListenerWrapper(View.OnClickListener onClickListener){
+            this.onClickListener = onClickListener;
+        }
+        @Override
+        public void onClick(View v) {
+            onClickListener.onClick(v);
+
+            onViewClick(v);
+        }
+    }
+
 
 
 
