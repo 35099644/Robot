@@ -1,12 +1,183 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:orientation="vertical"
+              android:layout_height="match_parent"
         >
 
-    <TextView
+    <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/hello_blank_fragment"
-            />
+            android:layout_height="wrap_content"
+            >
 
-</FrameLayout>
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动切换登陆"
+                />
+        <EditText
+                android:layout_weight="1"
+                android:hint="请输入切换登陆时间(分钟)"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="date"
+                />
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动切换位置"
+                />
+        <EditText
+                android:layout_weight="1"
+                android:hint="请输入切换位置时间(分钟)"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="date"
+                />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动回复信息"
+                />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动添加好友"
+                />
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动推送名片"
+                />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动发送信息"
+                />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="定期发朋友圈"
+                />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动点赞评论"
+                />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动添加群内好友"
+                />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+        <CheckBox
+                android:layout_weight="1"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自动导入手机号码"
+                />
+
+    </LinearLayout>
+</LinearLayout>
