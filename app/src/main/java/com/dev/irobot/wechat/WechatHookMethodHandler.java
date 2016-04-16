@@ -23,6 +23,8 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static android.R.attr.id;
 
@@ -203,16 +205,34 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             }
         });
 
+        XposedHelpers.findAndHookMethod(View.class, "setOnClickListener", View.OnClickListener.class, new MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+            }
+        });
+
     }
 
 
+    private final ExecutorService visitViewThreadPool = Executors.newCachedThreadPool();
     /**
      * 当界面发生变化的时候调用,
      * 需要在这里遍历组件树,查找相应的组建进行处理。
      * @param rootView
      */
-    public void onLayoutChange(View rootView) {
-        visiteViewTree(rootView);
+    public void onLayoutChange(final View rootView) {
+        visitViewThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                visiteViewTree(rootView);
+            }
+        });
     }
 
     private void visiteViewTree(View rootView) {
@@ -222,8 +242,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 visiteViewTree(((ViewGroup) rootView).getChildAt(i));
             }
         }else {
+
+            //如果是有文字显示的控件. Button, CheckBox等很多控件都是TextView子类
             if(rootView instanceof TextView){
-                Log.v(TAG,"View:"+rootView.getClass()+",text:"+((TextView) rootView).getText().toString()+", id:"+id+", hash:"+hashCode()+", view:"+rootView);
+                String text = ((TextView) rootView).getText().toString();
+                if(!text.isEmpty()){
+                    Log.v(TAG,"View:"+rootView.getClass()+",text:"+((TextView) rootView).getText().toString()+", id:"+id+", view:"+rootView);
+                }
             }
 
         }
