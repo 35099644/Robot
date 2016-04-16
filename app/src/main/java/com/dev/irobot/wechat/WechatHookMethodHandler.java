@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.location.GpsStatus;
@@ -13,7 +12,9 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
-import android.widget.RemoteViews;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import com.dev.irobot.ContextHolder;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
@@ -21,8 +22,9 @@ import com.dev.irobot.tool.Log;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
+
+import static android.R.attr.id;
 
 /**
  * Created by Jacky on 2016/4/10.
@@ -32,7 +34,6 @@ import java.util.Arrays;
  */
 public class WechatHookMethodHandler implements HookMethodHandler {
     private static final String TAG = WechatHookMethodHandler.class.getSimpleName();
-
 
     @Override
     public void findAndHookMethod(XC_LoadPackage.LoadPackageParam loadPackageParam) {
@@ -128,12 +129,14 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
 
                 if(param.thisObject instanceof Activity){
-                    Intent intent = ((Activity) param.thisObject).getIntent();
+                    final Activity activity = (Activity) param.thisObject;
+                    Intent intent = activity.getIntent();
                     if(intent != null){
-
                         Log.v(TAG, "Intent action:"+intent.getAction()+", component:"+intent.getComponent());
                     }
                 }
+
+
 
             }
         });
@@ -150,8 +153,26 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 super.afterHookedMethod(param);
                 Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
                 if(param.thisObject instanceof Activity){
-                    Activity hostActivity = (Activity) param.thisObject;
+                    Activity activity = (Activity) param.thisObject;
+                    final View rootView = activity.getWindow().getDecorView().getRootView();
+                    View.OnLayoutChangeListener layoutChangeListener = (View.OnLayoutChangeListener) rootView.getTag(View.OnLayoutChangeListener.class.hashCode()+rootView.getContext().hashCode());
+                    if(layoutChangeListener == null){
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+                            layoutChangeListener = new View.OnLayoutChangeListener() {
+                                @Override
+                                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                                    WechatHookMethodHandler.this.onLayoutChange(v);
+                                }
+                            };
+                            rootView.setTag(View.OnLayoutChangeListener.class.hashCode()+rootView.getContext().hashCode());
+                            rootView.addOnLayoutChangeListener(layoutChangeListener);
+                        }
+
+                    }
                 }
+
+
+
             }
         });
 
@@ -169,11 +190,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
                 if(param.args[2] instanceof Notification){
                     Notification notification = (Notification) param.args[2];
-
-                    Log.v(TAG,"Notification notification tickerText"+notification.tickerText);
-                    param.setResult(param.getResult());
-                    if(notification.tickerText.toString().contains("请加你为好友")){
-                        redirectToAcceptNewFriend();
+                    Log.v(TAG,"Notification notification tickerText:"+notification.tickerText);
+                    if(notification.tickerText.toString().contains("请加你为好友") && !notification.tickerText.toString().contains(":")){
+                        onNotifitionAcceptFriendMessage();
+                  }else if(notification.tickerText.toString().contains(":")){
+                        String text = notification.tickerText.toString();
+                        String name = text.substring(0, text.indexOf(":"));
+                        onNotifitionNewMessage(name);
                     }
                 }
 
@@ -184,58 +207,113 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
 
     /**
-     * 跳转到接受新朋友界面
+     * 当界面发生变化的时候调用,
+     * 需要在这里遍历组件树,查找相应的组建进行处理。
+     * @param rootView
      */
-    private void redirectToAcceptNewFriend(){
-
+    public void onLayoutChange(View rootView) {
+        visiteViewTree(rootView);
     }
 
-    /**
-     * 展开通知栏
-     */
-    public void expandNotification() {
-        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-        try {
-            Object service = ContextHolder.getInstance().getContext().getSystemService("statusbar");
-            Class<?> statusbarManager = Class
-                    .forName("android.app.StatusBarManager");
-            Method expand = null;
-            if (service != null) {
-                if (currentApiVersion <= 16) {
-                    expand = statusbarManager.getMethod("expand");
-                } else {
-                    expand = statusbarManager
-                            .getMethod("expandNotificationsPanel");
-                }
-                expand.setAccessible(true);
-                expand.invoke(service);
+    private void visiteViewTree(View rootView) {
+        if(rootView instanceof ViewGroup){
+            int count = ((ViewGroup) rootView).getChildCount();
+            for(int i = 0; i < count; i++){
+                visiteViewTree(((ViewGroup) rootView).getChildAt(i));
+            }
+        }else {
+            if(rootView instanceof TextView){
+                Log.v(TAG,"View:"+rootView.getClass()+",text:"+((TextView) rootView).getText().toString()+", id:"+id+", hash:"+hashCode()+", view:"+rootView);
             }
 
-        } catch (Exception e) {
         }
-
     }
 
 
     /**
-     * 收起通知栏
-     * @param context
+     * 当通知栏收到新朋友添加请求的时候调用
      */
-    public static void collapseNotification(Context context) {
-        try {
-            Object statusBarManager = context.getSystemService("statusbar");
-            Method collapse;
-
-            if (Build.VERSION.SDK_INT <= 16) {
-                collapse = statusBarManager.getClass().getMethod("collapse");
-            } else {
-                collapse = statusBarManager.getClass().getMethod("collapsePanels");
-            }
-            collapse.invoke(statusBarManager);
-        } catch (Exception localException) {
-            localException.printStackTrace();
-        }
+    public void onNotifitionAcceptFriendMessage(){
+        gotoAcceptFriendUI();
     }
+
+    /**
+     * 当通知栏收到聊天消息的时候调用
+     */
+    public void onNotifitionNewMessage(String name){
+        gotoChatUI(name);
+    }
+
+
+    /**
+     * 跳转到好友请求界面
+     */
+    private void gotoAcceptFriendUI(){
+        //TODO
+    }
+
+    /**
+     * 跳转到微信消息界面
+     */
+    private void gotoMessageUI(){
+        //TODO
+    }
+
+
+    /**
+     * 跳转到和某人的聊天界面
+     * @param name
+     */
+    private void gotoChatUI(String name){
+        //TODO
+    }
+
+//    /**
+//     * 展开通知栏
+//     */
+//    public void expandNotification() {
+//        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+//        try {
+//            Object service = ContextHolder.getInstance().getContext().getSystemService("statusbar");
+//            Class<?> statusbarManager = Class
+//                    .forName("android.app.StatusBarManager");
+//            Method expand = null;
+//            if (service != null) {
+//                if (currentApiVersion <= 16) {
+//                    expand = statusbarManager.getMethod("expand");
+//                } else {
+//                    expand = statusbarManager
+//                            .getMethod("expandNotificationsPanel");
+//                }
+//                expand.setAccessible(true);
+//                expand.invoke(service);
+//            }
+//
+//        } catch (Exception e) {
+//        }
+//
+//    }
+//
+//
+//    /**
+//     * 收起通知栏
+//     * @param context
+//     */
+//    public static void collapseNotification(Context context) {
+//        try {
+//            Object statusBarManager = context.getSystemService("statusbar");
+//            Method collapse;
+//
+//            if (Build.VERSION.SDK_INT <= 16) {
+//                collapse = statusBarManager.getClass().getMethod("collapse");
+//            } else {
+//                collapse = statusBarManager.getClass().getMethod("collapsePanels");
+//            }
+//            collapse.invoke(statusBarManager);
+//        } catch (Exception localException) {
+//            localException.printStackTrace();
+//        }
+//    }
 
 
     public void launchWeichat(){
