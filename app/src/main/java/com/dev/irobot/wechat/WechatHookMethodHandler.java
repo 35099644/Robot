@@ -6,6 +6,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.location.GpsStatus;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
@@ -26,8 +27,6 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static android.R.attr.id;
-
 /**
  * Created by Jacky on 2016/4/10.
  * 如果有公共父类只hook 公共父类就可以,不用每个类都hook, method只hook公共方法即可.
@@ -41,10 +40,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
     //安装程序后,分别进入微信的各个界面,如果当前界面是activity 则会有类似日志android.app.Activity.onResume(), param:[], object:com.tencent.mm.ui.LauncherUI@4ae6f760,从中可以获取到Activity名字，如果有用到就在代码中写入
     //微信界面中采用了大量Fragment,如果界面切换的时候看不到Activity的相关日志说明是Fragment之间在切换
     //微信主界面
-    private static final String WECHAT_ACTIVITY = "com.tencent.mm.ui.LauncherUI";
+    private static final String WECHAT_ACTIVITY_LAUNCHERUI = "com.tencent.mm.ui.LauncherUI";
+
+
 
     /**微信activity列表 ended*/
 
+    private volatile Activity currentActivity;
 
     @Override
     public void findAndHookMethod(XC_LoadPackage.LoadPackageParam loadPackageParam) {
@@ -141,6 +143,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
                 if(param.thisObject instanceof Activity){
                     final Activity activity = (Activity) param.thisObject;
+                    currentActivity = activity;
                     Intent intent = activity.getIntent();
                     if(intent != null){
                         Log.v(TAG, "Intent action:"+intent.getAction()+", component:"+intent.getComponent());
@@ -165,6 +168,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
                 if(param.thisObject instanceof Activity){
                     Activity activity = (Activity) param.thisObject;
+                    currentActivity = activity;
                     final View rootView = activity.getWindow().getDecorView().getRootView();
                     View.OnLayoutChangeListener layoutChangeListener = (View.OnLayoutChangeListener) rootView.getTag(View.OnLayoutChangeListener.class.hashCode()+rootView.getContext().hashCode());
                     if(layoutChangeListener == null){
@@ -245,33 +249,72 @@ public class WechatHookMethodHandler implements HookMethodHandler {
      * 需要在这里遍历组件树,查找相应的组建进行处理。
      * @param rootView
      */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public void onLayoutChange(final View rootView) {
         visitViewThreadPool.execute(new Runnable() {
             @Override
             public void run() {
-                visiteViewTree(rootView);
+                visiteViewTree(rootView, new StringBuffer("-"));
             }
         });
     }
 
-    private void visiteViewTree(View rootView) {
+    private void visiteViewTree(View rootView, StringBuffer format) {
         if(rootView instanceof ViewGroup){
             int count = ((ViewGroup) rootView).getChildCount();
+            StringBuilder builder = new StringBuilder();
+            builder.append("visiteViewTree "+","+format+"view:"+rootView+", child:"+count);
+            Log.d(TAG,builder.toString());
+
+            format.append("-");
             for(int i = 0; i < count; i++){
-                visiteViewTree(((ViewGroup) rootView).getChildAt(i));
+                visiteViewTree(((ViewGroup) rootView).getChildAt(i), format);
             }
         }else {
 
             //如果是有文字显示的控件. Button, CheckBox等很多控件都是TextView子类
+            StringBuilder builder = new StringBuilder();
+            builder.append("visiteViewTree "+","+format+"view:"+rootView);
             if(rootView instanceof TextView){
                 String text = ((TextView) rootView).getText().toString();
                 if(!text.isEmpty()){
-                    Log.d(TAG,"View:"+rootView.getClass()+",text:"+((TextView) rootView).getText().toString()+", id:"+id+", view:"+rootView);
+                    builder.append(((TextView) rootView).getText().toString());
                 }
             }
+            Log.d(TAG,builder.toString());
 
         }
     }
+
+
+    private void visiteClickedViewTree(View rootView, StringBuffer format) {
+        if(rootView instanceof ViewGroup){
+            int count = ((ViewGroup) rootView).getChildCount();
+            StringBuilder builder = new StringBuilder();
+            builder.append("visiteClickedViewTree "+format+"view:"+rootView+", child:"+count);
+            Log.i(TAG,builder.toString());
+
+            format.append("-");
+            for(int i = 0; i < count; i++){
+                visiteClickedViewTree(((ViewGroup) rootView).getChildAt(i), format);
+            }
+        }else {
+
+            //如果是有文字显示的控件. Button, CheckBox等很多控件都是TextView子类
+            StringBuilder builder = new StringBuilder();
+            builder.append("visiteClickedViewTree "+format+"view:"+rootView);
+            if(rootView instanceof TextView){
+                String text = ((TextView) rootView).getText().toString();
+                if(!text.isEmpty()){
+                    builder.append(((TextView) rootView).getText().toString());
+                }
+            }
+
+            Log.i(TAG,builder.toString());
+        }
+    }
+
+
 
 
     /**
@@ -279,13 +322,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
      * a wrapper method of onClick(View)
      * @param v
      */
-    private void onViewClick(View v) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("onViewClick view:"+v+", hash:"+v.hashCode()+", id:"+id);
-        if(v instanceof ViewGroup){
-            builder.append(",child:"+((ViewGroup) v).getChildCount());
-        }
-        Log.i(TAG,builder.toString());
+    private void onViewClick(final View v) {
+        visitViewThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                visiteClickedViewTree(v, new StringBuffer("-"));
+            }
+        });
     }
 
     /**
@@ -314,8 +357,18 @@ public class WechatHookMethodHandler implements HookMethodHandler {
      * 跳转到微信消息界面
      */
     private void gotoMessageUI(){
-        //TODO
+        if(isInLauncherUI()){
+
+        }
     }
+
+    private boolean isInLauncherUI(){
+        if(currentActivity != null && currentActivity.getClass().getName().equals(WECHAT_ACTIVITY_LAUNCHERUI)){
+            return true;
+        }
+        return false;
+    }
+
 
 
     /**
@@ -326,52 +379,37 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         //TODO
     }
 
-//    /**
-//     * 展开通知栏
-//     */
-//    public void expandNotification() {
-//        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-//        try {
-//            Object service = ContextHolder.getInstance().getContext().getSystemService("statusbar");
-//            Class<?> statusbarManager = Class
-//                    .forName("android.app.StatusBarManager");
-//            Method expand = null;
-//            if (service != null) {
-//                if (currentApiVersion <= 16) {
-//                    expand = statusbarManager.getMethod("expand");
-//                } else {
-//                    expand = statusbarManager
-//                            .getMethod("expandNotificationsPanel");
-//                }
-//                expand.setAccessible(true);
-//                expand.invoke(service);
-//            }
-//
-//        } catch (Exception e) {
-//        }
-//
-//    }
-//
-//
-//    /**
-//     * 收起通知栏
-//     * @param context
-//     */
-//    public static void collapseNotification(Context context) {
-//        try {
-//            Object statusBarManager = context.getSystemService("statusbar");
-//            Method collapse;
-//
-//            if (Build.VERSION.SDK_INT <= 16) {
-//                collapse = statusBarManager.getClass().getMethod("collapse");
-//            } else {
-//                collapse = statusBarManager.getClass().getMethod("collapsePanels");
-//            }
-//            collapse.invoke(statusBarManager);
-//        } catch (Exception localException) {
-//            localException.printStackTrace();
-//        }
-//    }
+    private String getIdentifierName(View view){
+        StringBuilder builder = new StringBuilder();
+        final int id = view.getId();
+        final Resources r = view.getResources();
+        if ((id >>> 24) != 0 && r != null) {
+            try {
+                String pkgname;
+                switch (id&0xff000000) {
+                    case 0x7f000000:
+                        pkgname="app";
+                        break;
+                    case 0x01000000:
+                        pkgname="android";
+                        break;
+                    default:
+                        pkgname = r.getResourcePackageName(id);
+                        break;
+                }
+                String typename = r.getResourceTypeName(id);
+                String entryname = r.getResourceEntryName(id);
+                builder.append(pkgname);
+                builder.append(":");
+                builder.append(typename);
+                builder.append("/");
+                builder.append(entryname);
+            } catch (Resources.NotFoundException e) {
+            }
+        }
+
+        return builder.toString();
+    }
 
 
     public void launchWeichat(){
