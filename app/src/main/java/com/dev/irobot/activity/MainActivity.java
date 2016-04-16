@@ -22,4 +22,5 @@ public class MainActivity extends SupportActivity {
             fragmentManager.beginTransaction().show(homeFragment).commit();
         }
     }
+
 }

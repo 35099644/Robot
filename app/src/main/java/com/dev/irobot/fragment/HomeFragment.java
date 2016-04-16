@@ -8,7 +8,10 @@ import com.dev.irobot.R;
 import com.dev.irobot.support.SupportFragment;
 
 public class HomeFragment extends SupportFragment {
-
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

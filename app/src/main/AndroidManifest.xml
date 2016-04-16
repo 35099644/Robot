@@ -3,6 +3,7 @@
           package="com.dev.irobot"
         >
 
+
     <application
             android:name=".WechatRobot"
             android:allowBackup="true"
@@ -39,5 +40,5 @@
 
 
     </application>
-
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
 </manifest>
