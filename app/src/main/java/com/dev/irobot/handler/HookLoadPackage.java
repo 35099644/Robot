@@ -22,5 +22,7 @@ public final class HookLoadPackage implements IXposedHookLoadPackage {
         if(hookMethodHandler !=null ){
             hookMethodHandler.findAndHookMethod(loadPackageParam);
         }
+
+
     }
 }

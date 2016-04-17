@@ -15,8 +15,9 @@ public class HomeFragment extends SupportFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        System.out.println(container.hashCode());
         return inflater.inflate(R.layout.view_home, container, false);
     }
+
+
 
 }

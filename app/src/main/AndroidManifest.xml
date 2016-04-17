@@ -3,7 +3,6 @@
           package="com.dev.irobot"
         >
 
-
     <application
             android:name=".WechatRobot"
             android:allowBackup="true"
@@ -19,12 +18,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <receiver
-                android:name=".receiver.BootMonitor"
-                >
+
+        <receiver android:name=".receiver.BootMonitor">
         </receiver>
 
-        <service android:name=".service.MonitorService"></service>
+        <service android:name=".service.MonitorService"/>
+
         <meta-data
                 android:name="xposedmodule"
                 android:value="true"
@@ -38,6 +37,6 @@
                 android:value="@string/app_desc"
                 />
 
-
     </application>
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"></uses-permission>
 </manifest>
