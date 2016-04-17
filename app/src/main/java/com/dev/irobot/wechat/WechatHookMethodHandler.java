@@ -25,12 +25,11 @@ import com.dev.irobot.event.DumpViewEvent;
 import com.dev.irobot.event.ViewClickEvent;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
-import com.dev.irobot.tool.ViewDump;
 import com.dev.irobot.tool.EventBus;
 import com.dev.irobot.tool.IdEntry;
 import com.dev.irobot.tool.Log;
+import com.dev.irobot.tool.ViewDump;
 import com.dev.irobot.tool.VisiteViewCallback;
-import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -390,9 +389,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
         @Override
         public void onEnded() {
-            Gson gson = new Gson();
-            final String dump = gson.toJson(viewDump).toLowerCase();
-            Log.i(TAG,"dumped view:"+dump);
+            Log.i(TAG,"dumped view:"+viewDump);
             final List<IdEntry> entrys = viewUseForByActivity.get(viewDump.getAttachedActivity());
 
             int size = entrys.size();
@@ -400,7 +397,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 return;
             }
 
-            EventBus.getDefault().post(new DumpViewEvent(dump, entrys));
+            EventBus.getDefault().post(new DumpViewEvent(viewDump, entrys));
 
 
         }
@@ -422,7 +419,8 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 }, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d(TAG,"onDumpView dump:"+event.getDump()+", entry:"+event.getEntrys().get(which));
+                        Log.d(TAG,"onDumpView dump:"+event.getViewDump()+", entry:"+event.getEntrys().get(which));
+                        viewDumps.put(event.getEntrys().get(which).getId(), event.getViewDump());
                         //TODO 这里要将View信息保存起来,后面要查找view tree 中的view时会跟具这些信息查找
                     }
                 }).show();

@@ -1,6 +1,7 @@
 package com.dev.irobot.event;
 
 import com.dev.irobot.tool.IdEntry;
+import com.dev.irobot.tool.ViewDump;
 
 import java.util.List;
 
@@ -8,15 +9,15 @@ import java.util.List;
  * Created by Jacky on 2016/4/17.
  */
 public class DumpViewEvent {
-    private String dump;
+    private ViewDump viewDump;
     private List<IdEntry> entrys;
-    public DumpViewEvent(String dump, List<IdEntry> entrys) {
-        this.dump = dump;
+    public DumpViewEvent(ViewDump dump, List<IdEntry> entrys) {
+        this.viewDump = dump;
         this.entrys = entrys;
     }
 
-    public String getDump() {
-        return dump;
+    public ViewDump getViewDump() {
+        return viewDump;
     }
 
     public List<IdEntry> getEntrys() {
