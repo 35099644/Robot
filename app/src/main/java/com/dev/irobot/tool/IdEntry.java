@@ -11,19 +11,19 @@ public class IdEntry {
     /**
      * 我们自己声明的按钮的作用, 控件校准的时候会在对话框中显示
      */
-    private final String name;
+    private final String describe;
 
     public IdEntry(String id, String name) {
         this.id = id;
-        this.name = name;
+        this.describe = name;
     }
 
     public String getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getDescribe() {
+        return describe;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class IdEntry {
     public String toString() {
         final StringBuilder sb = new StringBuilder("IdEntry{");
         sb.append("id='").append(id).append('\'');
-        sb.append(", name='").append(name).append('\'');
+        sb.append(", describe='").append(describe).append('\'');
         sb.append('}');
         return sb.toString();
     }

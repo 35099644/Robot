@@ -3,6 +3,7 @@ package com.dev.irobot.wechat;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -410,20 +411,22 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         currentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                new AlertDialog.Builder(currentActivity).setTitle("控件校对").setAdapter(new ArrayAdapter(currentActivity, android.R.layout.simple_list_item_1,event.getEntrys()){
+                Dialog dialog = new AlertDialog.Builder(currentActivity).setTitle("控件校对").setAdapter(new ArrayAdapter(currentActivity, android.R.layout.simple_list_item_1,event.getEntrys()){
                     @Override
                     public String getItem(int position) {
                         IdEntry o = (IdEntry) super.getItem(position);
-                        return  o.getName();
+                        return  o.getDescribe();
                     }
                 }, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d(TAG,"onDumpView dump:"+event.getViewDump()+", entry:"+event.getEntrys().get(which));
+                        Log.i(TAG,"onDumpView dump:"+event.getViewDump()+", entry:"+event.getEntrys().get(which));
                         viewDumps.put(event.getEntrys().get(which).getId(), event.getViewDump());
                         //TODO 这里要将View信息保存起来,后面要查找view tree 中的view时会跟具这些信息查找
                     }
-                }).show();
+                }).create();
+
+                dialog.show();
             }
         });
     }
