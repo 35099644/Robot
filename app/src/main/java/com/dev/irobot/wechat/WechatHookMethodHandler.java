@@ -438,6 +438,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
      */
     @Subscribe
     public void onViewClickEvent(final ViewClickEvent event) {
+        Log.i(TAG, "onViewClickEvent activity:"+currentActivity+", view:"+event.getView());
         DumpViewCallback dumpViewCallback = new DumpViewCallback(event.getView());
         dumpViewCallback.onBegin();
         visiteClickedViewTree(event.getView(), new StringBuffer("-"), dumpViewCallback);
