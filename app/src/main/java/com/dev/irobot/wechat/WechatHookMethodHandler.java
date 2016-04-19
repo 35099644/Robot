@@ -23,13 +23,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.dev.irobot.ContextHolder;
 import com.dev.irobot.config.Config;
-import com.dev.irobot.event.DumpViewEvent;
 import com.dev.irobot.event.ViewClickEvent;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
 import com.dev.irobot.tool.IdEntry;
 import com.dev.irobot.tool.Log;
-import com.dev.irobot.tool.ViewDump;
 import com.dev.irobot.tool.VisiteViewCallback;
 import com.google.gson.Gson;
 import com.squareup.otto.EventBus;
@@ -73,10 +71,12 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
     //暂时保存点击微信上的控件时我们获取到的view信息，以后这些信息可以导出到文件， 不用每次都校准。
     //key 对应IdEntry中的id，也就是我们给view起的名字。
-    //ViewDump 对应view及其子控件的信息
-    private final Map<String,ViewDump> viewDumps = new ConcurrentHashMap<String, ViewDump>();
+    //value 对应view及其子控件的信息
+    private final Map<String,String> viewDumps = new ConcurrentHashMap<String, String>();
 
-    private final Map<ViewDump,View> viewCache= new ConcurrentHashMap<ViewDump, View>();
+    //key 对应view及其子控件的信息
+    //value 更具key查找的view
+    private final Map<String,View> viewCache= new ConcurrentHashMap<String, View>();
 
     static {
 
@@ -92,7 +92,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
     }
     private volatile Activity currentActivity;
-
+    private volatile View rootView;
     public WechatHookMethodHandler(){
         EventBus.getDefault().register(this);
     }
@@ -207,6 +207,28 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             }
         });
 
+
+        XposedHelpers.findAndHookMethod(Activity.class, "setContentView", View.class, new MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
+            }
+
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.v(TAG,"afterHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
+                if(param.thisObject instanceof Activity){
+                    Activity activity = (Activity) param.thisObject;
+                    currentActivity = activity;
+                    rootView = (View) param.args[0];
+                }
+            }
+        });
+
+
         XposedHelpers.findAndHookMethod(Activity.class, "onResume", new MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -221,7 +243,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 if(param.thisObject instanceof Activity){
                     Activity activity = (Activity) param.thisObject;
                     currentActivity = activity;
-                    final View rootView = activity.getWindow().getDecorView();
+                    rootView = activity.getWindow().getDecorView();
                     View.OnLayoutChangeListener layoutChangeListener = (View.OnLayoutChangeListener) rootView.getTag(View.OnLayoutChangeListener.class.hashCode()+rootView.getContext().hashCode());
                     if(layoutChangeListener == null){
                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
@@ -237,9 +259,6 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
                     }
                 }
-
-
-
             }
         });
 
@@ -312,15 +331,13 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         visitViewThreadPool.execute(new Runnable() {
             @Override
             public void run() {
-                visiteViewTree(rootView, null, null);
+                FindViewCallback callback = new FindViewCallback();
+                callback.onBegin();
+                visiteViewTree(rootView, new StringBuffer("-"), callback);
+                callback.onEnded();
             }
         });
     }
-
-    private void visiteViewTree(View rootView, StringBuffer format) {
-        visiteViewTree(rootView, format, null);
-    }
-
 
     private void visiteViewTree(View rootView, StringBuffer format, VisiteViewCallback callback) {
         if(callback != null){
@@ -355,12 +372,6 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
     class FindViewCallback implements VisiteViewCallback {
 
-        private final View rootView;
-        public FindViewCallback(View rootView) {
-            this.rootView = rootView;
-
-        }
-
         @Override
         public void onBegin() {
 
@@ -368,18 +379,10 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
         @Override
         public void onVisite(View view) {
-            for(ViewDump dump : viewDumps.values()){
-                if(getIdentifierName(view).equals(dump.getKey())){
-                    DumpViewCallback callback = new DumpViewCallback(view);
-                    callback.setPostEvent(false);
-                    callback.onBegin();
-                    visiteViewTree(view, null, callback);
-                    callback.onEnded();
-
-                    if(dump.getValues().equals(callback.getViewDump())){
-                        viewCache.put(dump, view);
-                        Log.i(TAG, "find:"+getIdentifierName(view)+", dump:"+dump);
-                    }
+            for(Map.Entry<String, String> entry : viewDumps.entrySet()){
+                if(getIdentifierName(view).equals(entry.getValue())){
+                    viewCache.put(entry.getValue(), view);
+                    Log.v(TAG, "find entry id:"+entry.getKey()+", dump:"+entry.getValue());
                 }
             }
         }
@@ -390,86 +393,6 @@ public class WechatHookMethodHandler implements HookMethodHandler {
     }
 
 
-    class DumpViewCallback implements VisiteViewCallback {
-
-
-        private final ViewDump viewDump = new ViewDump();
-        private final View rootView;
-        private boolean flag;
-        public DumpViewCallback(View rootView) {
-            this.rootView = rootView;
-            this.flag = true;
-
-        }
-
-        public void setPostEvent(boolean flag){
-            this.flag = flag;
-        }
-
-        @Override
-        public void onBegin() {
-            viewDump.setAttachedActivity(currentActivity.getClass().getName());
-            viewDump.setKey(getIdentifierName(rootView));
-        }
-
-        @Override
-        public void onVisite(View view) {
-            viewDump.getValues().add(getIdentifierName(view));
-        }
-
-        @Override
-        public void onEnded() {
-            Log.i(TAG,"dumped view:"+viewDump.getValues());
-            final List<IdEntry> entrys = viewUseForByActivity.get(viewDump.getAttachedActivity());
-
-            int size = entrys.size();
-            if(size == 0){
-                return;
-            }
-
-            if(flag){
-                EventBus.getDefault().post(new DumpViewEvent(viewDump, entrys));
-            }
-
-
-        }
-
-        public ViewDump getViewDump() {
-            return viewDump;
-        }
-
-    }
-
-
-    @Subscribe
-    public void onDumpViewEvent(final DumpViewEvent event){
-        currentActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Dialog dialog = new AlertDialog.Builder(currentActivity).setTitle("控件校对").setAdapter(new ArrayAdapter(currentActivity, android.R.layout.simple_list_item_1,event.getEntrys()){
-                    @Override
-                    public String getItem(int position) {
-                        IdEntry o = (IdEntry) super.getItem(position);
-                        return  o.getDescribe();
-                    }
-                }, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(TAG,"onDumpView dump:"+event.getViewDump()+", entry:"+event.getEntrys().get(which));
-                        viewDumps.put(event.getEntrys().get(which).getId(), event.getViewDump());
-                        visitViewThreadPool.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                saveData();
-                            }
-                        });
-                    }
-                }).create();
-
-                dialog.show();
-            }
-        });
-    }
 
     private void saveData() {
         ViewDumpEntry viewDumpEntry = new ViewDumpEntry();
@@ -484,7 +407,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         String dumps = config.getProperties().getProperty("viewdumpentry","");
         ViewDumpEntry viewDumpEntry = new Gson().fromJson(dumps, ViewDumpEntry.class);
         if(viewDumpEntry != null){
-            Map<String,ViewDump> temp = viewDumpEntry.getViewDumps();
+            Map<String,String> temp = viewDumpEntry.getViewDumps();
             if(temp != null){
                 viewDumps.putAll(temp);
             }
@@ -498,26 +421,37 @@ public class WechatHookMethodHandler implements HookMethodHandler {
      */
     @Subscribe
     public void onViewClickEvent(final ViewClickEvent event) {
-        Log.i(TAG, "onViewClickEvent activity:"+currentActivity+", view:"+getIdentifierName(event.getView()));
-        DumpViewCallback dumpViewCallback = new DumpViewCallback(event.getView());
-        dumpViewCallback.onBegin();
-        visiteViewTree(event.getView(), new StringBuffer("-"), dumpViewCallback);
-        dumpViewCallback.onEnded();
+        final String dump = getIdentifierName(event.getView());
+        Log.i(TAG, "onViewClickEvent activity:" + currentActivity + ", dump:" + dump);
+        final List<IdEntry> entrys = viewUseForByActivity.get(currentActivity.getClass().getName());
 
-    }
+        int size = entrys.size();
+        if (size == 0) {
+            return;
+        }
 
-    /**
-     * 更具viewdump信息从rootview中查找view
-     * @param rootview
-     * @param viewDump
-     * @return
-     */
-    public View findViewByViewDump(View rootview, ViewDump viewDump){
-        FindViewCallback callback = new FindViewCallback(rootview);
-        callback.onBegin();
-        visiteViewTree(rootview, null, callback);
-        callback.onEnded();
-        return viewCache.get(viewDump);
+        Dialog dialog = new AlertDialog.Builder(currentActivity).setTitle("控件校对").setAdapter(new ArrayAdapter(currentActivity, android.R.layout.simple_list_item_1, entrys) {
+            @Override
+            public String getItem(int position) {
+                IdEntry o = (IdEntry) super.getItem(position);
+                return o.getDescribe();
+            }
+        }, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i(TAG, "onDumpView dump:" + dump + ", entry:" + entrys.get(which));
+                viewDumps.put(entrys.get(which).getId(), dump);
+                visitViewThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        saveData();
+                    }
+                });
+            }
+        }).create();
+
+        dialog.show();
+
     }
 
     /**
@@ -570,8 +504,23 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         out.append(view.isVerticalScrollBarEnabled() ? 'V' : '.');
         out.append(view.isClickable() ? 'C' : '.');
         out.append(view.isLongClickable() ? 'L' : '.');
-        out.append(' ');
-
+        out.append('[');
+        out.append(view.getLeft());
+        out.append(',');
+        out.append(view.getTop());
+        out.append(',');
+        out.append(view.getRight());
+        out.append(',');
+        out.append(view.getBottom());
+        out.append("]");
+        out.append(".");
+        out.append('[');
+        int[] point = new int[2];
+        view.getLocationOnScreen(point);
+        out.append("x:"+point[0]);
+        out.append(",");
+        out.append("y:"+point[1]);
+        out.append("]");
         final int id = view.getId();
         if (id != View.NO_ID) {
             out.append(" #");
@@ -580,12 +529,12 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             if ((id >>> 24) != 0 && r != null) {
                 try {
                     String pkgname;
-                    switch (id&0xff000000) {
+                    switch (id & 0xff000000) {
                         case 0x7f000000:
-                            pkgname="app";
+                            pkgname = "app";
                             break;
                         case 0x01000000:
-                            pkgname="android";
+                            pkgname = "android";
                             break;
                         default:
                             pkgname = r.getResourcePackageName(id);
@@ -664,16 +613,14 @@ public class WechatHookMethodHandler implements HookMethodHandler {
     }
 
     class ViewDumpEntry {
-        private Map<String,ViewDump> viewDumps = new ConcurrentHashMap<String, ViewDump>();
+        private Map<String,String> viewDumps = new ConcurrentHashMap<String, String>();
 
-        public void setViewDumps(Map<String, ViewDump> viewDumps) {
+        public void setViewDumps(Map<String, String> viewDumps) {
             if(viewDumps != null && !viewDumps.isEmpty()){
                 this.viewDumps.putAll(viewDumps);
             }
-
         }
-
-        public Map<String, ViewDump> getViewDumps() {
+        public Map<String, String> getViewDumps() {
             return viewDumps;
         }
     }
