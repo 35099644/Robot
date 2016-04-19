@@ -1,8 +1,12 @@
-package com.dev.irobot.Config;
+package com.dev.irobot.config;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import com.dev.irobot.ContextHolder;
+import android.os.Environment;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Created by Jacky on 2016/4/17.
@@ -10,26 +14,53 @@ import com.dev.irobot.ContextHolder;
 public class Config {
     private static final Config config = new Config();
 
-    private SharedPreferences sharedPreferences;
+    private Properties properties = new Properties();
 
-    private static final Object LOCK = new Object();
-    private Config(){
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ContextHolder.getInstance().getContext());
+
+    private File dir =new File(Environment.getExternalStorageDirectory().getPath(), "com.dev.irobot");
+    private String name="config.properties";
+    private Config() {
     }
 
-    public static Config getConfig(){
+    public static Config getConfig() {
         return config;
     }
 
-    public boolean putString(String key, String value){
-        synchronized (LOCK){
-            return sharedPreferences.edit().putString(key, value).commit();
+    public void load() {
+        try {
+            if(!dir.exists()){
+                dir.mkdir();
+            }
+            File file = new File(dir, name);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+
+            properties.load(new FileInputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public String getString(String key, String defaultValue){
-        synchronized (LOCK){
-            return sharedPreferences.getString(key, defaultValue);
+
+    public void save() {
+        try {
+            if(!dir.exists()){
+                dir.mkdir();
+            }
+            File file = new File(dir, name);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            properties.store(new FileOutputStream(file), "hook config");
+            System.out.println(properties);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+    }
+
+    public Properties getProperties() {
+        return properties;
     }
 }

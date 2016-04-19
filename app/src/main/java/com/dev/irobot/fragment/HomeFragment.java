@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.dev.irobot.R;
+import com.dev.irobot.config.Config;
 import com.dev.irobot.support.SupportFragment;
 
 public class HomeFragment extends SupportFragment {

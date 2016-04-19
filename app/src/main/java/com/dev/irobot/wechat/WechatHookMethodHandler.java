@@ -22,15 +22,17 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 import com.dev.irobot.ContextHolder;
+import com.dev.irobot.config.Config;
 import com.dev.irobot.event.DumpViewEvent;
 import com.dev.irobot.event.ViewClickEvent;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;
-import com.dev.irobot.tool.EventBus;
 import com.dev.irobot.tool.IdEntry;
 import com.dev.irobot.tool.Log;
 import com.dev.irobot.tool.ViewDump;
 import com.dev.irobot.tool.VisiteViewCallback;
+import com.google.gson.Gson;
+import com.squareup.otto.EventBus;
 import com.squareup.otto.Subscribe;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -72,7 +74,9 @@ public class WechatHookMethodHandler implements HookMethodHandler {
     //暂时保存点击微信上的控件时我们获取到的view信息，以后这些信息可以导出到文件， 不用每次都校准。
     //key 对应IdEntry中的id，也就是我们给view起的名字。
     //ViewDump 对应view及其子控件的信息
-    private static final Map<String,ViewDump> viewDumps = new ConcurrentHashMap<String, ViewDump>();
+    private final Map<String,ViewDump> viewDumps = new ConcurrentHashMap<String, ViewDump>();
+
+    private final Map<ViewDump,View> viewCache= new ConcurrentHashMap<ViewDump, View>();
 
     static {
 
@@ -80,8 +84,8 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         //com.tencent.mm.ui.LauncherUI view begin
         List<IdEntry> useFor = new ArrayList<IdEntry>();
         useFor.add(new IdEntry(WECHAT_ACTIVITY_LAUNCHERUI_VIEW_BOTTOM_WEIXIN, "主界面底部微信按钮"));
-        useFor.add(new IdEntry(WECHAT_ACTIVITY_LAUNCHERUI_VIEW_BOTTOM_CONTACTS,"主界面联系人按钮"));
-        useFor.add(new IdEntry(WECHAT_ACTIVITY_LAUNCHERUI_VIEW_BOTTOM_FIND,"主界面通讯录按钮"));
+        useFor.add(new IdEntry(WECHAT_ACTIVITY_LAUNCHERUI_VIEW_BOTTOM_CONTACTS,"主界面通讯录按钮"));
+        useFor.add(new IdEntry(WECHAT_ACTIVITY_LAUNCHERUI_VIEW_BOTTOM_FIND,"主界面发现按钮"));
         useFor.add(new IdEntry(WECHAT_ACTIVITY_LAUNCHERUI_VIEW_BOTTOM_MINE,"主界面我按钮"));
         viewUseForByActivity.put(WECHAT_ACTIVITY_LAUNCHERUI, useFor);
         //com.tencent.mm.ui.LauncherUI view begin
@@ -95,6 +99,10 @@ public class WechatHookMethodHandler implements HookMethodHandler {
     @Override
     public void findAndHookMethod(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         Log.v(TAG,"load package:"+loadPackageParam.packageName);
+
+        loadData();
+
+
 
         XposedHelpers.findAndHookMethod(TelephonyManager.class, "getDeviceId", new MethodHook() {
             @Override
@@ -292,6 +300,8 @@ public class WechatHookMethodHandler implements HookMethodHandler {
     }
 
 
+
+
     private final ExecutorService visitViewThreadPool = Executors.newCachedThreadPool();
     /**
      * 当界面发生变化的时候调用,
@@ -302,79 +312,98 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         visitViewThreadPool.execute(new Runnable() {
             @Override
             public void run() {
-                visiteViewTree(rootView, new StringBuffer("-"));
+                visiteViewTree(rootView, null, null);
             }
         });
     }
 
     private void visiteViewTree(View rootView, StringBuffer format) {
-        if(rootView instanceof ViewGroup){
-            int count = ((ViewGroup) rootView).getChildCount();
-            StringBuilder builder = new StringBuilder();
-            builder.append("visiteViewTree "+","+format+"view:"+rootView+", child:"+count);
-            Log.d(TAG,builder.toString());
-
-            format.append("-");
-            for(int i = 0; i < count; i++){
-                visiteViewTree(((ViewGroup) rootView).getChildAt(i), format);
-            }
-        }else {
-
-            //如果是有文字显示的控件. Button, CheckBox等很多控件都是TextView子类
-            StringBuilder builder = new StringBuilder();
-            builder.append("visiteViewTree "+","+format+"view:"+rootView);
-            if(rootView instanceof TextView){
-                String text = ((TextView) rootView).getText().toString();
-                if(!text.isEmpty()){
-                    builder.append(((TextView) rootView).getText().toString());
-                }
-            }
-            Log.d(TAG,builder.toString());
-
-        }
+        visiteViewTree(rootView, format, null);
     }
 
 
-    private void visiteClickedViewTree(View rootView, StringBuffer format, VisiteViewCallback callback) {
+    private void visiteViewTree(View rootView, StringBuffer format, VisiteViewCallback callback) {
         if(callback != null){
             callback.onVisite(rootView);
         }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("visiteViewTree id:"+rootView.getId()+format+"view:"+getIdentifierName(rootView));
+        if(format != null){
+            if(callback != null){
+                Log.i(TAG,builder.toString());
+            }else {
+                Log.v(TAG,builder.toString());
+            }
+        }
+
         if(rootView instanceof ViewGroup){
             int count = ((ViewGroup) rootView).getChildCount();
-            StringBuilder builder = new StringBuilder();
-            builder.append("visiteClickedViewTree "+format+"view:"+rootView+", child:"+count);
-            Log.i(TAG,builder.toString());
 
-            format.append("-");
+
+
+            if(format!=null){
+                format.append("-");
+            }
+
             for(int i = 0; i < count; i++){
-                visiteClickedViewTree(((ViewGroup) rootView).getChildAt(i), format, callback);
+                visiteViewTree(((ViewGroup) rootView).getChildAt(i), format, callback);
             }
 
-        }else {
-
-            //如果是有文字显示的控件. Button, CheckBox等很多控件都是TextView子类
-            StringBuilder builder = new StringBuilder();
-            builder.append("visiteClickedViewTree "+format+"view:"+rootView);
-            if(rootView instanceof TextView){
-                String text = ((TextView) rootView).getText().toString();
-                if(!text.isEmpty()){
-                    builder.append(((TextView) rootView).getText().toString());
-                }
-            }
-
-            Log.i(TAG,builder.toString());
         }
     }
 
+    class FindViewCallback implements VisiteViewCallback {
+
+        private final View rootView;
+        public FindViewCallback(View rootView) {
+            this.rootView = rootView;
+
+        }
+
+        @Override
+        public void onBegin() {
+
+        }
+
+        @Override
+        public void onVisite(View view) {
+            for(ViewDump dump : viewDumps.values()){
+                if(getIdentifierName(view).equals(dump.getKey())){
+                    DumpViewCallback callback = new DumpViewCallback(view);
+                    callback.setPostEvent(false);
+                    callback.onBegin();
+                    visiteViewTree(view, null, callback);
+                    callback.onEnded();
+
+                    if(dump.getValues().equals(callback.getViewDump())){
+                        viewCache.put(dump, view);
+                        Log.i(TAG, "find:"+getIdentifierName(view)+", dump:"+dump);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onEnded() {
+        }
+    }
 
 
     class DumpViewCallback implements VisiteViewCallback {
 
+
         private final ViewDump viewDump = new ViewDump();
         private final View rootView;
+        private boolean flag;
         public DumpViewCallback(View rootView) {
             this.rootView = rootView;
+            this.flag = true;
 
+        }
+
+        public void setPostEvent(boolean flag){
+            this.flag = flag;
         }
 
         @Override
@@ -390,7 +419,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
 
         @Override
         public void onEnded() {
-            Log.i(TAG,"dumped view:"+viewDump);
+            Log.i(TAG,"dumped view:"+viewDump.getValues());
             final List<IdEntry> entrys = viewUseForByActivity.get(viewDump.getAttachedActivity());
 
             int size = entrys.size();
@@ -398,9 +427,15 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 return;
             }
 
-            EventBus.getDefault().post(new DumpViewEvent(viewDump, entrys));
+            if(flag){
+                EventBus.getDefault().post(new DumpViewEvent(viewDump, entrys));
+            }
 
 
+        }
+
+        public ViewDump getViewDump() {
+            return viewDump;
         }
 
     }
@@ -422,13 +457,38 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i(TAG,"onDumpView dump:"+event.getViewDump()+", entry:"+event.getEntrys().get(which));
                         viewDumps.put(event.getEntrys().get(which).getId(), event.getViewDump());
-                        //TODO 这里要将View信息保存起来,后面要查找view tree 中的view时会跟具这些信息查找
+                        visitViewThreadPool.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                saveData();
+                            }
+                        });
                     }
                 }).create();
 
                 dialog.show();
             }
         });
+    }
+
+    private void saveData() {
+        ViewDumpEntry viewDumpEntry = new ViewDumpEntry();
+        viewDumpEntry.setViewDumps(viewDumps);
+        Config.getConfig().getProperties().put("viewdumpentry", new Gson().toJson(viewDumpEntry));
+        Config.getConfig().save();
+    }
+
+    private void loadData() {
+        Config config = Config.getConfig();
+        config.load();
+        String dumps = config.getProperties().getProperty("viewdumpentry","");
+        ViewDumpEntry viewDumpEntry = new Gson().fromJson(dumps, ViewDumpEntry.class);
+        if(viewDumpEntry != null){
+            Map<String,ViewDump> temp = viewDumpEntry.getViewDumps();
+            if(temp != null){
+                viewDumps.putAll(temp);
+            }
+        }
     }
 
     /**
@@ -438,10 +498,10 @@ public class WechatHookMethodHandler implements HookMethodHandler {
      */
     @Subscribe
     public void onViewClickEvent(final ViewClickEvent event) {
-        Log.i(TAG, "onViewClickEvent activity:"+currentActivity+", view:"+event.getView());
+        Log.i(TAG, "onViewClickEvent activity:"+currentActivity+", view:"+getIdentifierName(event.getView()));
         DumpViewCallback dumpViewCallback = new DumpViewCallback(event.getView());
         dumpViewCallback.onBegin();
-        visiteClickedViewTree(event.getView(), new StringBuffer("-"), dumpViewCallback);
+        visiteViewTree(event.getView(), new StringBuffer("-"), dumpViewCallback);
         dumpViewCallback.onEnded();
 
     }
@@ -453,8 +513,11 @@ public class WechatHookMethodHandler implements HookMethodHandler {
      * @return
      */
     public View findViewByViewDump(View rootview, ViewDump viewDump){
-        // TODO
-        return null;
+        FindViewCallback callback = new FindViewCallback(rootview);
+        callback.onBegin();
+        visiteViewTree(rootview, null, callback);
+        callback.onEnded();
+        return viewCache.get(viewDump);
     }
 
     /**
@@ -541,6 +604,16 @@ public class WechatHookMethodHandler implements HookMethodHandler {
             }
         }
 
+
+        out.append("}");
+
+        out.append(".");
+        if(view instanceof ViewGroup){
+            out.append(((ViewGroup) view).getChildCount());
+        }else {
+            out.append("0");
+        }
+
         if(view instanceof TextView && !(view instanceof EditText)){
             String text = ((TextView) view).getText().toString();
             if(!text.isEmpty()){
@@ -551,7 +624,6 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         }else{
             out.append(".");
         }
-        out.append("}");
         return out.toString();
     }
 
@@ -588,6 +660,21 @@ public class WechatHookMethodHandler implements HookMethodHandler {
         public void onClick(View v) {
             onClickListener.onClick(v);
             EventBus.getDefault().post(new ViewClickEvent(v));
+        }
+    }
+
+    class ViewDumpEntry {
+        private Map<String,ViewDump> viewDumps = new ConcurrentHashMap<String, ViewDump>();
+
+        public void setViewDumps(Map<String, ViewDump> viewDumps) {
+            if(viewDumps != null && !viewDumps.isEmpty()){
+                this.viewDumps.putAll(viewDumps);
+            }
+
+        }
+
+        public Map<String, ViewDump> getViewDumps() {
+            return viewDumps;
         }
     }
 
