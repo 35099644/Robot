@@ -4,6 +4,12 @@ import android.os.Handler;
 import android.os.Looper;
 
 /**
+ *
+ *
+ *
+ *
+ *
+ *
  * Created by Jacky on 2016/4/17.
  */
 public class EventBus extends Bus{
