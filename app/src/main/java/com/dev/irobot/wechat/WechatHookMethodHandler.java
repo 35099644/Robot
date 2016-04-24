@@ -1,6 +1,6 @@
 package com.dev.irobot.wechat;
 
-import android.annotation.TargetApi;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -13,7 +13,6 @@ import android.content.res.Resources;
 import android.location.GpsStatus;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.view.View;
@@ -187,7 +186,7 @@ public class WechatHookMethodHandler implements HookMethodHandler {
                 Log.v(TAG,"beforeHookerMethod:"+param.method+", param:"+ Arrays.toString(param.args)+", object:"+param.thisObject);
             }
 
-            @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
