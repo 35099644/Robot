@@ -21,7 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 import com.dev.irobot.ContextHolder;
-import com.dev.irobot.config.Config;
+import com.dev.irobot.Config.Config;
 import com.dev.irobot.event.ViewClickEvent;
 import com.dev.irobot.handler.HookMethodHandler;
 import com.dev.irobot.handler.MethodHook;

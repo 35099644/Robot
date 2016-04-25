@@ -1,4 +1,4 @@
-package com.dev.irobot.config;
+package com.dev.irobot.Config;
 
 import android.os.Environment;
 
