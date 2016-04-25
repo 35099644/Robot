@@ -4,6 +4,20 @@
               android:layout_height="match_parent"
         >
 
+    <Button
+            android:id="@+id/importToContacts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="导入联系人到通讯录"
+            />
+
+    <Button
+            android:id="@+id/importToWeixin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="导入通讯录到微信中"
+            />
+
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
